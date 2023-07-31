@@ -18,6 +18,21 @@ import { LoggerMiddlewareV2 } from './middleware/logger-v2.middleware';
 import { functionalLogger } from './middleware/functional-logger.middleware';
 import { NumberManipulationService } from 'src/number-manipulation/number-manipulation.service';
 
+const fakeObjectProvider = {
+  provide: 'fakeObject',
+  useFactory: async () => {
+    const sleep = (seconds) =>
+      new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+    await sleep(1);
+
+    return {
+      a: 'A',
+      b: 'B',
+      c: 'C',
+    };
+  },
+};
+
 @Module({
   imports: [
     NumberManipulationModule,
@@ -28,21 +43,26 @@ import { NumberManipulationService } from 'src/number-manipulation/number-manipu
     {
       // provide: UsersService,
       provide: 'userService',
-      // useClass: UsersService2,
+      useClass: UsersService2,
       // useValue: UsersServiceObject,
-      useFactory: (numberManipulationService: NumberManipulationService) => {
-        return {
-          ttl: '15 m',
-          privateField: 'Not really',
-          async update(id: number, user: Object): Promise<Object> {
-            return Promise.resolve({ ...user, hello: 'world', world: 'hello' });
-          },
-        };
-      },
-      inject: [NumberManipulationService],
+      // useFactory: (numberManipulationService: NumberManipulationService) => {
+      //   return {
+      //     ttl: '15 m',
+      //     privateField: 'Not really',
+      //     async update(id: number, user: Object): Promise<Object> {
+      //       return Promise.resolve({ ...user, hello: 'world', world: 'hello' });
+      //     },
+      //   };
+      // },
+      // inject: [NumberManipulationService], // InjectionToken (service token)
     },
+    {
+      provide: 'userServiceAlias',
+      useExisting: 'userService',
+    },
+    fakeObjectProvider,
   ],
-  exports: ['userService'],
+  exports: ['userService', fakeObjectProvider],
 })
 export class UsersModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

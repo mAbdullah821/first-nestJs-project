@@ -21,10 +21,17 @@ import { Request } from 'express';
 import { StringToInt } from './pipes/string-to-int.pipe';
 import { NumberManipulationService } from 'src/number-manipulation/number-manipulation.service';
 
+interface Abc {
+  a: string;
+  b: string;
+  c: string;
+}
+
 @Controller('users')
 export class UsersController {
   constructor(
-    @Inject('userService') private readonly service: UsersService,
+    @Inject('userServiceAlias') private readonly service: UsersService,
+    @Inject('fakeObject') private readonly abc: Abc,
     private readonly numberManipulationService: NumberManipulationService,
   ) {}
 
@@ -43,6 +50,7 @@ export class UsersController {
 
   @Patch(':id')
   update(@Param('id', StringToInt) id: number, @Body() data: UpdateUserDto) {
+    console.log(this.abc);
     // return { id, ...data };
     return this.service.update(id, data);
   }
