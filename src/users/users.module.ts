@@ -3,6 +3,7 @@ import {
   NestModule,
   MiddlewareConsumer,
   RequestMethod,
+  Scope,
 } from '@nestjs/common';
 import { UsersController } from './users.controller';
 import {
@@ -17,6 +18,8 @@ import { LoggerMiddleware } from './middleware/logger.middleware';
 import { LoggerMiddlewareV2 } from './middleware/logger-v2.middleware';
 import { functionalLogger } from './middleware/functional-logger.middleware';
 import { NumberManipulationService } from 'src/number-manipulation/number-manipulation.service';
+import { ConfigModule } from '../config/config.module';
+import { UserLogger } from './interceptors/logging.interceptor';
 
 const fakeObjectProvider = {
   provide: 'fakeObject',
@@ -35,15 +38,22 @@ const fakeObjectProvider = {
 
 @Module({
   imports: [
-    NumberManipulationModule,
+    ConfigModule.register({ folder: '/' }),
+    NumberManipulationModule.register({
+      hello1: 'world1',
+      hello2: 'World2',
+    }),
+
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
   controllers: [UsersController],
   providers: [
+    // UserLogger,
     {
       // provide: UsersService,
       provide: 'userService',
       useClass: UsersService2,
+      scope: Scope.DEFAULT,
       // useValue: UsersServiceObject,
       // useFactory: (numberManipulationService: NumberManipulationService) => {
       //   return {

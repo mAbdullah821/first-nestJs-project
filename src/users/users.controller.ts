@@ -12,14 +12,20 @@ import {
   Delete,
   HttpStatus,
   Inject,
+  Scope,
+  UseInterceptors,
+  UseFilters,
+  InternalServerErrorException,
 } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { UsersService } from './users.service';
 import { UserDto } from './dto/user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Request } from 'express';
 import { StringToInt } from './pipes/string-to-int.pipe';
-import { NumberManipulationService } from 'src/number-manipulation/number-manipulation.service';
+import { UserLogger } from './interceptors/logging.interceptor';
+import { HttpExceptionFilter } from './filters/http-exeception.filter';
 
 interface Abc {
   a: string;
@@ -27,12 +33,12 @@ interface Abc {
   c: string;
 }
 
-@Controller('users')
+@Controller({ path: 'users', scope: Scope.DEFAULT })
 export class UsersController {
   constructor(
     @Inject('userServiceAlias') private readonly service: UsersService,
     @Inject('fakeObject') private readonly abc: Abc,
-    private readonly numberManipulationService: NumberManipulationService,
+    private moduleRef: ModuleRef,
   ) {}
 
   @Get()
@@ -44,8 +50,9 @@ export class UsersController {
   }
 
   @Post()
+  @UseInterceptors(UserLogger)
   create(@Body() data: CreateUserDto) {
-    return data;
+    return this.service.add(data);
   }
 
   @Patch(':id')
@@ -56,6 +63,9 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @UseFilters(HttpExceptionFilter)
   @HttpCode(HttpStatus.NO_CONTENT)
-  delete(@Param('id', ParseIntPipe) id: number) {}
+  delete(@Param('id', ParseIntPipe) id: number) {
+    throw new InternalServerErrorException();
+  }
 }
