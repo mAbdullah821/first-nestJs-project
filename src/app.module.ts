@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { NumberManipulationModule } from './number-manipulation/number-manipulation.module';
 import { ConfigModule } from './config/config.module';
+// import { connection } from 'mongoose';
 
 const MONGO_USER = 'admin';
 const MONGO_PASSWORD = 'admin821';
@@ -18,7 +19,12 @@ const mongoURL = `mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_IP}:${MONGO_
   imports: [
     NinjasModule,
     UsersModule,
-    MongooseModule.forRoot(mongoURL),
+    MongooseModule.forRoot(mongoURL, {
+      connectionFactory: (connection) => {
+        connection.plugin(require('mongoose-autopopulate'));
+        return connection;
+      },
+    }),
     NumberManipulationModule,
     ConfigModule,
   ],

@@ -1,5 +1,6 @@
 import { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Tmp, TmpSchema } from './tmp.schema';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -13,6 +14,15 @@ export class User {
 
   @Prop({ type: Boolean })
   isAdult?: boolean;
+
+  @Prop({ type: [TmpSchema] })
+  tmps?: Tmp[];
 }
 
-export const UserSchema = SchemaFactory.createForClass(User);
+const _UserSchema = SchemaFactory.createForClass(User);
+
+_UserSchema.pre('save', function () {
+  console.log('Hello From pre:save_1');
+});
+
+export const UserSchema = _UserSchema;

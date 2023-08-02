@@ -52,11 +52,13 @@ export class UsersController {
   @Post()
   @UseInterceptors(UserLogger)
   create(@Body() data: CreateUserDto) {
+    console.log(data, 123456);
     return this.service.add(data);
   }
 
   @Patch(':id')
-  update(@Param('id', StringToInt) id: number, @Body() data: UpdateUserDto) {
+  //@Param('id', StringToInt)
+  update(@Param('id') id: string, @Body() data: UpdateUserDto) {
     console.log(this.abc);
     // return { id, ...data };
     return this.service.update(id, data);
@@ -65,7 +67,9 @@ export class UsersController {
   @Delete(':id')
   @UseFilters(HttpExceptionFilter)
   @HttpCode(HttpStatus.NO_CONTENT)
-  delete(@Param('id', ParseIntPipe) id: number) {
-    throw new InternalServerErrorException();
+  // @Param('id', ParseIntPipe)
+  delete(@Param('id') id: string) {
+    // throw new InternalServerErrorException();
+    return this.service.delete(id);
   }
 }

@@ -39,7 +39,7 @@ export class NinjasController {
     @Param('id', ParseIntPipe) id: number,
     @Body(new ValidationPipe()) ninja: UpdateNinjasDto,
   ) {
-    console.log(await this.userService.update(id, ninja));
+    console.log(await this.userService.update(id.toString(), ninja));
     console.log((this.userService as unknown as { ttl: string }).ttl);
     console.log(
       (this.userService as unknown as { privateField: string }).privateField,

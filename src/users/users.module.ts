@@ -11,7 +11,7 @@ import {
   UsersService2,
   UsersServiceObject,
 } from './users.service';
-import { MongooseModule } from '@nestjs/mongoose';
+import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { User, UserSchema } from './models/user.entity';
 import { NumberManipulationModule } from 'src/number-manipulation/number-manipulation.module';
 import { LoggerMiddleware } from './middleware/logger.middleware';
@@ -20,6 +20,13 @@ import { functionalLogger } from './middleware/functional-logger.middleware';
 import { NumberManipulationService } from 'src/number-manipulation/number-manipulation.service';
 import { ConfigModule } from '../config/config.module';
 import { UserLogger } from './interceptors/logging.interceptor';
+import { Event, EventSchema } from './models/event.schema';
+import {
+  ClickedLinkEvent,
+  ClickedLinkEventSchema,
+} from './models/click-link-event.schema';
+import { SignUpEvent, SignUpEventSchema } from './models/sign-up-event.schema';
+import { UserRepository } from './repositories/user.repository';
 
 const fakeObjectProvider = {
   provide: 'fakeObject',
@@ -36,6 +43,8 @@ const fakeObjectProvider = {
   },
 };
 
+const eventModel = {};
+
 @Module({
   imports: [
     ConfigModule.register({ folder: '/' }),
@@ -44,15 +53,44 @@ const fakeObjectProvider = {
       hello2: 'World2',
     }),
 
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    // MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeatureAsync([
+      {
+        name: User.name,
+        useFactory: () => {
+          const schema = UserSchema;
+
+          schema.plugin(require('mongoose-autopopulate'));
+          schema.post('save', function () {
+            console.log('Hello From post:save_2');
+          });
+
+          return schema;
+        },
+      },
+      {
+        name: Event.name,
+        useFactory: () => EventSchema,
+        discriminators: [
+          { name: ClickedLinkEvent.name, schema: ClickedLinkEventSchema },
+          { name: SignUpEvent.name, schema: SignUpEventSchema },
+        ],
+      },
+    ]),
   ],
   controllers: [UsersController],
   providers: [
+    UserRepository,
+    {
+      provide: getModelToken(Event.name),
+      useValue: eventModel,
+    },
     // UserLogger,
     {
       // provide: UsersService,
       provide: 'userService',
-      useClass: UsersService2,
+      // useClass: UsersService2,
+      useClass: UsersService,
       scope: Scope.DEFAULT,
       // useValue: UsersServiceObject,
       // useFactory: (numberManipulationService: NumberManipulationService) => {
@@ -95,7 +133,7 @@ export class UsersModule implements NestModule {
     // -----------------------
     consumer
       .apply(LoggerMiddleware, functionalLogger)
-      .exclude({ path: 'users', method: RequestMethod.GET })
+      .exclude({ path: 'users', method: RequestMethod.HEAD })
       .forRoutes(UsersController);
   }
 }
