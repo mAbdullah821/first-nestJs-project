@@ -16,8 +16,9 @@ import {
   UseInterceptors,
   UseFilters,
   InternalServerErrorException,
+  SetMetadata,
 } from '@nestjs/common';
-import { ModuleRef } from '@nestjs/core';
+import { ModuleRef, Reflector } from '@nestjs/core';
 import { UsersService } from './users.service';
 import { UserDto } from './dto/user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -33,12 +34,16 @@ interface Abc {
   c: string;
 }
 
+const Roles = (...roles: string[]) => SetMetadata('roles', roles);
+
+@Roles('admin')
 @Controller({ path: 'users', scope: Scope.DEFAULT })
 export class UsersController {
   constructor(
     @Inject('userServiceAlias') private readonly service: UsersService,
     @Inject('fakeObject') private readonly abc: Abc,
     private moduleRef: ModuleRef,
+    private reflector: Reflector,
   ) {}
 
   @Get()
@@ -51,6 +56,7 @@ export class UsersController {
 
   @Post()
   @UseInterceptors(UserLogger)
+  @Roles('normal_user')
   create(@Body() data: CreateUserDto) {
     console.log(data, 123456);
     return this.service.add(data);
