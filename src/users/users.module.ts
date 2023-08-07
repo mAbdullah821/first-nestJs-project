@@ -4,6 +4,7 @@ import {
   MiddlewareConsumer,
   RequestMethod,
   Scope,
+  OnModuleInit,
 } from '@nestjs/common';
 import { UsersController } from './users.controller';
 import {
@@ -112,7 +113,7 @@ const eventModel = {};
   ],
   exports: ['userService', fakeObjectProvider],
 })
-export class UsersModule implements NestModule {
+export class UsersModule implements NestModule, OnModuleInit {
   configure(consumer: MiddlewareConsumer) {
     // consumer
     //   .apply(LoggerMiddleware)
@@ -135,5 +136,9 @@ export class UsersModule implements NestModule {
       .apply(LoggerMiddleware, functionalLogger)
       .exclude({ path: 'users', method: RequestMethod.HEAD })
       .forRoutes(UsersController);
+  }
+
+  onModuleInit() {
+    console.log('[UsersModule] The module has been initialized.');
   }
 }

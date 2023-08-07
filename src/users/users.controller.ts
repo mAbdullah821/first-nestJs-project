@@ -17,6 +17,8 @@ import {
   UseFilters,
   InternalServerErrorException,
   SetMetadata,
+  OnModuleInit,
+  OnModuleDestroy,
 } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import { UsersService } from './users.service';
@@ -27,6 +29,8 @@ import { Request } from 'express';
 import { StringToInt } from './pipes/string-to-int.pipe';
 import { UserLogger } from './interceptors/logging.interceptor';
 import { HttpExceptionFilter } from './filters/http-exeception.filter';
+import { Roles } from './decorators/roles.decorator';
+// import { setInterval } from 'timers/promises';
 
 interface Abc {
   a: string;
@@ -34,17 +38,38 @@ interface Abc {
   c: string;
 }
 
-const Roles = (...roles: string[]) => SetMetadata('roles', roles);
-
 @Roles('admin')
 @Controller({ path: 'users', scope: Scope.DEFAULT })
-export class UsersController {
+export class UsersController implements OnModuleInit, OnModuleDestroy {
   constructor(
     @Inject('userServiceAlias') private readonly service: UsersService,
     @Inject('fakeObject') private readonly abc: Abc,
     private moduleRef: ModuleRef,
     private reflector: Reflector,
   ) {}
+
+  async onModuleInit() {
+    let cnt = 1;
+    const intervalTime = 250;
+    const sleepSeconds = 1;
+    const printCount = Math.floor((sleepSeconds * 1000) / intervalTime);
+
+    const intervalId = setInterval(() => {
+      console.log(`the ${cnt++}'th time`);
+
+      if (cnt > printCount) clearInterval(intervalId);
+    }, intervalTime);
+
+    const sleep = (seconds) =>
+      new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+
+    await sleep(sleepSeconds);
+    console.log('[UsersController] The module has been initialized.');
+  }
+
+  onModuleDestroy() {
+    console.log('[UsersController] The module has been Destroyed.');
+  }
 
   @Get()
   getAll() {

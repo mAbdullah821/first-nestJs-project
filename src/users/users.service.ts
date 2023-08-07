@@ -1,5 +1,11 @@
 import { Model, Connection } from 'mongoose';
-import { Injectable, Inject, Scope, forwardRef } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  Scope,
+  forwardRef,
+  OnModuleInit,
+} from '@nestjs/common';
 import { INQUIRER, ModuleRef } from '@nestjs/core';
 
 import { InjectModel, InjectConnection } from '@nestjs/mongoose';
@@ -14,7 +20,7 @@ import { Tmp } from './models/tmp.schema';
 import { UserRepository } from './repositories/user.repository';
 
 @Injectable({ scope: Scope.DEFAULT })
-export class UsersService {
+export class UsersService implements OnModuleInit {
   constructor(
     protected readonly configService: ConfigService,
     // @InjectModel(User.name) private userModel: Model<UserDocument>,
@@ -24,6 +30,10 @@ export class UsersService {
     // protected moduleRef: ModuleRef,
     private readonly repository: UserRepository,
   ) {}
+
+  onModuleInit() {
+    console.log('[UsersService] The module has been initialized.');
+  }
 
   async add(user: CreateUserDto): Promise<User> {
     // const tmp = await this.moduleRef.create(Temp);
