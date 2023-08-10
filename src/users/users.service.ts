@@ -5,8 +5,10 @@ import {
   Scope,
   forwardRef,
   OnModuleInit,
+  Optional,
 } from '@nestjs/common';
 import { INQUIRER, ModuleRef } from '@nestjs/core';
+import { NinjasService } from '../ninjas/ninjas.service';
 
 import { InjectModel, InjectConnection } from '@nestjs/mongoose';
 import { User, UserDocument } from './models/user.entity';
@@ -21,13 +23,17 @@ import { UserRepository } from './repositories/user.repository';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class UsersService implements OnModuleInit {
+  @Inject(INQUIRER)
+  protected readonly parentClass: object;
+
   constructor(
-    protected readonly configService: ConfigService,
+    @Optional() protected readonly configService: ConfigService,
     // @InjectModel(User.name) private userModel: Model<UserDocument>,
     // @InjectConnection() private connection: Connection,
     // @Inject(INQUIRER) protected readonly parentClass: object,
     // @Inject(forwardRef(() => NumberManipulationService)) private readonly numberManipulationService: NumberManipulationService,
     // protected moduleRef: ModuleRef,
+    private readonly ninjasService: NinjasService,
     private readonly repository: UserRepository,
   ) {}
 

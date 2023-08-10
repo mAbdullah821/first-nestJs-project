@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   ValidationPipe,
   Req,
+  Res,
   HttpCode,
   Delete,
   HttpStatus,
@@ -19,18 +20,26 @@ import {
   SetMetadata,
   OnModuleInit,
   OnModuleDestroy,
+  Redirect,
+  All,
+  HttpException,
+  NotFoundException,
 } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import { UsersService } from './users.service';
 import { UserDto } from './dto/user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { StringToInt } from './pipes/string-to-int.pipe';
 import { UserLogger } from './interceptors/logging.interceptor';
 import { HttpExceptionFilter } from './filters/http-exeception.filter';
+import { HttpExceptionFilter2 } from './filters/http-execption2.filter';
+import { MongooseErrorFilter } from './filters/mongoose-error.filter';
+import { AnythingFilter } from './filters/anything.filter';
 import { Roles } from './decorators/roles.decorator';
 // import { setInterval } from 'timers/promises';
+import { ForbiddenException } from './exceptions/forbidden.exception';
 
 interface Abc {
   a: string;
@@ -39,6 +48,8 @@ interface Abc {
 }
 
 @Roles('admin')
+@UseFilters(AnythingFilter)
+@UseFilters(MongooseErrorFilter)
 @Controller({ path: 'users', scope: Scope.DEFAULT })
 export class UsersController implements OnModuleInit, OnModuleDestroy {
   constructor(
@@ -72,6 +83,7 @@ export class UsersController implements OnModuleInit, OnModuleDestroy {
   }
 
   @Get()
+  // @Res({ passthrough: true }) res: Response,
   getAll() {
     // console.log('-------------------');
     // console.log(this.numberManipulationService.toInt('123456'));
@@ -89,6 +101,7 @@ export class UsersController implements OnModuleInit, OnModuleDestroy {
 
   @Patch(':id')
   //@Param('id', StringToInt)
+  @HttpCode(HttpStatus.OK)
   update(@Param('id') id: string, @Body() data: UpdateUserDto) {
     console.log(this.abc);
     // return { id, ...data };
@@ -102,5 +115,40 @@ export class UsersController implements OnModuleInit, OnModuleDestroy {
   delete(@Param('id') id: string) {
     // throw new InternalServerErrorException();
     return this.service.delete(id);
+  }
+
+  @All('not-found')
+  @Redirect('http://localhost:3000/users', 302)
+  notFound() {
+    return {
+      statusCode: 301,
+    };
+  }
+
+  @All('error1')
+  @UseFilters(HttpExceptionFilter2)
+  error1() {
+    throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+  }
+
+  @All('error2')
+  error2() {
+    throw new HttpException(
+      { status: 'Failed', msg: 'Forbidden' },
+      HttpStatus.FORBIDDEN,
+    );
+  }
+
+  @All('error3')
+  error3() {
+    throw new ForbiddenException();
+  }
+
+  @All('error4')
+  error4() {
+    throw new NotFoundException('Not Found', {
+      cause: new Error('Not Found Path'),
+      description: 'Hello World',
+    });
   }
 }

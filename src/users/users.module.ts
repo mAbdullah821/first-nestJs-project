@@ -28,6 +28,9 @@ import {
 } from './models/click-link-event.schema';
 import { SignUpEvent, SignUpEventSchema } from './models/sign-up-event.schema';
 import { UserRepository } from './repositories/user.repository';
+import { APP_FILTER } from '@nestjs/core';
+import { HttpExceptionFilter } from './filters/http-exeception.filter';
+import { AnythingFilter } from './filters/anything.filter';
 
 const fakeObjectProvider = {
   provide: 'fakeObject',
@@ -82,6 +85,14 @@ const eventModel = {};
   controllers: [UsersController],
   providers: [
     UserRepository,
+    {
+      provide: APP_FILTER,
+      useClass: AnythingFilter,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
     {
       provide: getModelToken(Event.name),
       useValue: eventModel,
