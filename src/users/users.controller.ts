@@ -26,6 +26,7 @@ import {
   NotFoundException,
   DefaultValuePipe,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import { UsersService } from './users.service';
@@ -44,12 +45,16 @@ import { Roles } from './decorators/roles.decorator';
 import { ForbiddenException } from './exceptions/forbidden.exception';
 import { IntToInt } from './pipes/int-to-int.pipe';
 import { RoleGuard } from './guards/role.guard';
+import { BeforeAfterInterceptor } from './interceptors/before-after.interceptor';
 
 interface Abc {
   a: string;
   b: string;
   c: string;
 }
+
+const sleep = (seconds) =>
+  new Promise((resolve) => setTimeout(resolve, Math.floor(seconds * 1000)));
 
 @Roles('admin')
 @UseFilters(AnythingFilter)
@@ -74,9 +79,6 @@ export class UsersController implements OnModuleInit, OnModuleDestroy {
 
       if (cnt > printCount) clearInterval(intervalId);
     }, intervalTime);
-
-    const sleep = (seconds) =>
-      new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 
     await sleep(sleepSeconds);
     console.log('[UsersController] The module has been initialized.');
@@ -163,5 +165,13 @@ export class UsersController implements OnModuleInit, OnModuleDestroy {
   @All('pipe')
   pipe(@Body('age', new DefaultValuePipe(18), IntToInt) body: { age: number }) {
     return 'Ok';
+  }
+
+  @All('before-after-interceptor')
+  @UseInterceptors(BeforeAfterInterceptor)
+  async intercept() {
+    await sleep(Math.random() * 2);
+    if (Date.now() % 2 === 0) return 'Ok';
+    else throw new BadRequestException();
   }
 }
