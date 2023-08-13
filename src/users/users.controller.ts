@@ -24,6 +24,8 @@ import {
   All,
   HttpException,
   NotFoundException,
+  DefaultValuePipe,
+  UseGuards,
 } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import { UsersService } from './users.service';
@@ -40,6 +42,8 @@ import { AnythingFilter } from './filters/anything.filter';
 import { Roles } from './decorators/roles.decorator';
 // import { setInterval } from 'timers/promises';
 import { ForbiddenException } from './exceptions/forbidden.exception';
+import { IntToInt } from './pipes/int-to-int.pipe';
+import { RoleGuard } from './guards/role.guard';
 
 interface Abc {
   a: string;
@@ -101,6 +105,8 @@ export class UsersController implements OnModuleInit, OnModuleDestroy {
 
   @Patch(':id')
   //@Param('id', StringToInt)
+  @Roles('user')
+  @UseGuards(RoleGuard)
   @HttpCode(HttpStatus.OK)
   update(@Param('id') id: string, @Body() data: UpdateUserDto) {
     console.log(this.abc);
@@ -109,6 +115,8 @@ export class UsersController implements OnModuleInit, OnModuleDestroy {
   }
 
   @Delete(':id')
+  @Roles('admin')
+  @UseGuards(RoleGuard)
   @UseFilters(HttpExceptionFilter)
   @HttpCode(HttpStatus.NO_CONTENT)
   // @Param('id', ParseIntPipe)
@@ -150,5 +158,10 @@ export class UsersController implements OnModuleInit, OnModuleDestroy {
       cause: new Error('Not Found Path'),
       description: 'Hello World',
     });
+  }
+
+  @All('pipe')
+  pipe(@Body('age', new DefaultValuePipe(18), IntToInt) body: { age: number }) {
+    return 'Ok';
   }
 }

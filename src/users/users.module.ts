@@ -18,6 +18,7 @@ import { NumberManipulationModule } from 'src/number-manipulation/number-manipul
 import { LoggerMiddleware } from './middleware/logger.middleware';
 import { LoggerMiddlewareV2 } from './middleware/logger-v2.middleware';
 import { functionalLogger } from './middleware/functional-logger.middleware';
+import { AttachUserDataMiddleware } from './middleware/attach-user-data.middleware';
 import { NumberManipulationService } from 'src/number-manipulation/number-manipulation.service';
 import { ConfigModule } from '../config/config.module';
 import { UserLogger } from './interceptors/logging.interceptor';
@@ -147,6 +148,13 @@ export class UsersModule implements NestModule, OnModuleInit {
       .apply(LoggerMiddleware, functionalLogger)
       .exclude({ path: 'users', method: RequestMethod.HEAD })
       .forRoutes(UsersController);
+
+    consumer
+      .apply(AttachUserDataMiddleware)
+      .forRoutes(
+        { path: 'users/:id', method: RequestMethod.PATCH },
+        { path: 'users/:id', method: RequestMethod.DELETE },
+      );
   }
 
   onModuleInit() {

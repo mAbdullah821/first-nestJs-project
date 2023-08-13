@@ -33,4 +33,7 @@ export class UserDto {
 
   @Allow()
   tmps: Tmp[];
+
+  @IsString()
+  role: string;
 }
