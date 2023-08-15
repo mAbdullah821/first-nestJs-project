@@ -86,14 +86,14 @@ const eventModel = {};
   controllers: [UsersController],
   providers: [
     UserRepository,
-    {
-      provide: APP_FILTER,
-      useClass: AnythingFilter,
-    },
-    {
-      provide: APP_FILTER,
-      useClass: HttpExceptionFilter,
-    },
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: AnythingFilter,
+    // },
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: HttpExceptionFilter,
+    // },
     {
       provide: getModelToken(Event.name),
       useValue: eventModel,
@@ -154,6 +154,7 @@ export class UsersModule implements NestModule, OnModuleInit {
       .forRoutes(
         { path: 'users/:id', method: RequestMethod.PATCH },
         { path: 'users/:id', method: RequestMethod.DELETE },
+        { path: 'users/custom-decorator', method: RequestMethod.ALL },
       );
   }
 

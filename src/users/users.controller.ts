@@ -46,6 +46,7 @@ import { ForbiddenException } from './exceptions/forbidden.exception';
 import { IntToInt } from './pipes/int-to-int.pipe';
 import { RoleGuard } from './guards/role.guard';
 import { BeforeAfterInterceptor } from './interceptors/before-after.interceptor';
+import { User } from './decorators/user.decorator';
 
 interface Abc {
   a: string;
@@ -57,7 +58,7 @@ const sleep = (seconds) =>
   new Promise((resolve) => setTimeout(resolve, Math.floor(seconds * 1000)));
 
 @Roles('admin')
-@UseFilters(AnythingFilter)
+// @UseFilters(AnythingFilter)
 @UseFilters(MongooseErrorFilter)
 @Controller({ path: 'users', scope: Scope.DEFAULT })
 export class UsersController implements OnModuleInit, OnModuleDestroy {
@@ -173,5 +174,13 @@ export class UsersController implements OnModuleInit, OnModuleDestroy {
     await sleep(Math.random() * 2);
     if (Date.now() % 2 === 0) return 'Ok';
     else throw new BadRequestException();
+  }
+
+  @All('custom-decorator')
+  customDecorator(
+    @User(new ValidationPipe({ validateCustomDecorators: true }))
+    user: UpdateUserDto,
+  ) {
+    return user;
   }
 }
