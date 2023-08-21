@@ -47,6 +47,7 @@ import { IntToInt } from './pipes/int-to-int.pipe';
 import { RoleGuard } from './guards/role.guard';
 import { BeforeAfterInterceptor } from './interceptors/before-after.interceptor';
 import { User } from './decorators/user.decorator';
+import { ConfigService } from '@nestjs/config';
 
 interface Abc {
   a: string;
@@ -67,6 +68,7 @@ export class UsersController implements OnModuleInit, OnModuleDestroy {
     @Inject('fakeObject') private readonly abc: Abc,
     private moduleRef: ModuleRef,
     private reflector: Reflector,
+    private readonly configService: ConfigService,
   ) {}
 
   async onModuleInit() {
@@ -182,5 +184,20 @@ export class UsersController implements OnModuleInit, OnModuleDestroy {
     user: UpdateUserDto,
   ) {
     return user;
+  }
+
+  @All('print-env-variables')
+  printEnvVariables() {
+    // before using the custom config-File.
+    console.log(this.configService.get<number>('PORT'));
+    console.log(this.configService.get<number>('DATABASE_USER'));
+    console.log(this.configService.get<number>('DATABASE_PASSWORD'));
+
+    // after using the custom config-File
+    console.log('--------------');
+    console.log(this.configService.get<number>('port'));
+    console.log(this.configService.get<string>('database.user'));
+    console.log(this.configService.get<string>('database.password'));
+    return 'Done';
   }
 }
