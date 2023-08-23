@@ -10,11 +10,13 @@ import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
 import { validate } from './env.validation';
 // import { connection } from 'mongoose';
+import { UserAuthModule } from './user-auth/user-auth.module';
+import { AuthModule } from './auth/auth.module';
 
 const MONGO_USER = 'admin';
 const MONGO_PASSWORD = 'admin821';
 const MONGO_IP = 'localhost';
-const MONGO_PORT = 27018;
+const MONGO_PORT = 27020;
 
 const mongoURL = `mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_IP}:${MONGO_PORT}/`;
 
@@ -35,6 +37,8 @@ const mongoURL = `mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_IP}:${MONGO_
       },
     }),
     NumberManipulationModule,
+    UserAuthModule,
+    AuthModule,
     // ConfigModule,
   ],
   controllers: [AppController],

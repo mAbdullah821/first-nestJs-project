@@ -10,6 +10,6 @@ services:
     volumes:
       - mongo-db:/data/db
     ports:
-      - '27018:27017'
+      - '27020:27017'
 volumes:
   mongo-db:
